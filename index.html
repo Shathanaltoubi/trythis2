@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>منظم متجر أدوات تنظيف السيارات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand"><strong>Store Organizer</strong></div>
+      <div class="top-actions">
+        <button id="loginBtn" class="ghost">تسجيل دخول</button>
+        <button id="cartBtn" class="ghost">سلة <span id="cartCount" class="badge">0</span></button>
+      </div>
+    </div>
+    <h1>منظم متجر أدوات تنظيف السيارات</h1>
+    <p class="muted">نسخة محلية سريعة — التخزين في المتصفح</p>
+  </header>
+  <!-- Auth modal (blocks browsing until login/register) -->
+  <div id="authModal" class="auth-modal hidden">
+    <div class="auth-card">
+      <h2>تسجيل الدخول أو إنشاء حساب</h2>
+      <div class="auth-tabs">
+        <button id="tabLogin" class="ghost">دخول</button>
+        <button id="tabRegister" class="ghost">تسجيل</button>
+      </div>
+      <div id="authBody">
+        <div id="loginPane">
+          <input id="loginUser" placeholder="اسم المستخدم">
+          <input id="loginPass" type="password" placeholder="كلمة المرور (8 أحرف على الأقل)">
+          <label style="display:flex;align-items:center;gap:8px;margin-top:8px"><input id="rememberMe" type="checkbox"> تذكرني</label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="doLogin">دخول</button>
+            <a href="#" id="forgotLink" style="margin-left:auto;font-size:13px">نسيت كلمة المرور؟</a>
+          </div>
+        </div>
+        <div id="registerPane" class="hidden">
+          <input id="regUser" placeholder="اسم المستخدم جديد">
+          <input id="regPass" type="password" placeholder="كلمة المرور (8 أحرف على الأقل)">
+          <input id="regPass2" type="password" placeholder="تأكيد كلمة المرور">
+          <label style="display:flex;align-items:center;gap:8px;margin-top:8px">دور المستخدم:
+            <select id="regRole">
+              <option value="customer">زبون</option>
+              <option value="cashier">كاشير</option>
+              <option value="admin">مدير</option>
+            </select>
+          </label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="doRegister">إنشاء حساب</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="globalCartPanel" class="card hidden" style="position:fixed;top:64px;right:20px;width:320px;z-index:60">
+    <h3 style="margin:0 0 8px">سلة المشتريات</h3>
+    <div id="globalCartItems" style="max-height:300px;overflow:auto"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button id="gotoPOS">افتح POS</button>
+      <button id="clearGlobalCart" class="ghost">تفريغ السلة</button>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="card">
+      <h2>أضف منتج</h2>
+      <div class="form-row">
+        <input id="pName" placeholder="اسم المنتج">
+        <input id="pSku" placeholder="رمز/SKU (اختياري)">
+        <input id="pCategory" placeholder="فئة (اختياري)">
+        <input id="pSupplier" placeholder="المورد (اختياري)">
+        <input id="pQty" type="number" placeholder="الكمية" value="0">
+        <input id="pReorder" type="number" placeholder="حد إعادة التوريد (اختياري)">
+        <input id="pPrice" type="number" placeholder="سعر الوحدة" step="0.01">
+        <input id="pImage" type="file" accept="image/*">
+        <img id="pImagePreview" src="" alt="" style="height:46px;border-radius:6px;object-fit:cover;display:none;border:1px solid #e6e9ee">
+        <button id="addProduct">أضف منتج</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>قائمة المنتجات</h2>
+      <div class="controls">
+        <input id="search" placeholder="ابحث عن منتج">
+        <button id="exportCsv" class="ghost">تصدير CSV</button>
+        <button id="exportJson" class="ghost">تصدير JSON</button>
+        <button id="importJson" class="ghost">استيراد JSON</button>
+        <input id="fileInput" type="file" accept="application/json" class="hidden">
+      </div>
+      <table id="productsTable">
+        <thead>
+          <tr>
+            <th>صورة</th>
+            <th>الاسم</th>
+            <th>SKU</th>
+            <th>الفئة</th>
+            <th>المورد</th>
+            <th>الكمية</th>
+            <th>حد إعادة التوريد</th>
+            <th>سعر</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>سجلات المخزون (وارد / صادر)</h2>
+      <div class="form-row">
+        <select id="movProduct"></select>
+        <select id="movType">
+          <option value="in">وارد</option>
+          <option value="out">صادر</option>
+        </select>
+        <input id="movQty" type="number" placeholder="الكمية" value="1">
+        <input id="movNote" placeholder="ملاحظة (اختياري)">
+        <button id="addMov">تسجيل</button>
+      </div>
+      <div class="log">
+        <table id="movTable">
+          <thead><tr><th>الوقت</th><th>المنتج</th><th>نوع</th><th>كمية</th><th>ملاحظة</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>جدولة الحسابات / تذكيرات</h2>
+      <div class="form-row">
+        <input id="schedTitle" placeholder="وصف الدفع أو التذكير">
+        <input id="schedDate" type="date">
+        <input id="schedAmount" type="number" placeholder="المبلغ (اختياري)">
+        <button id="addSched">أضف تذكير</button>
+      </div>
+      <ul id="schedulesList"></ul>
+    </section>
+
+    <footer class="card small muted">
+      حفظ محلي: <code>localStorage</code>. لاحقًا نقدر نضيف مشاركة عبر Supabase أو API.
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html> 
